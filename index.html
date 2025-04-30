@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Binance Alpha Points Daily Plan (15-Day Balance)</title>
+    <title>Binance Alpha Points Daily Plan (Promo)</title>
     <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
     <style>
         body {
@@ -14,7 +14,7 @@
             color: #333;
         }
         .container {
-            max-width: 750px; /* Wider for more detailed output */
+            max-width: 750px;
             margin: auto;
             background: #fff;
             padding: 25px;
@@ -51,6 +51,18 @@
             font-size: 1em;
             background-color: #fff;
         }
+         .input-group input[type="checkbox"] {
+            margin-right: 8px;
+            vertical-align: middle;
+         }
+         .input-group label[for="applyPromotion"] {
+             display: inline-block;
+             font-weight: normal;
+             margin-bottom: 0;
+             vertical-align: middle;
+             cursor: pointer;
+         }
+
         button {
             display: block;
             width: 100%;
@@ -147,7 +159,7 @@
 <body>
     <div class="container">
         <h1>Binance Alpha Points Daily Planning</h1>
-        <p>Plan your daily Alpha token *purchase* volume based on your assumed constant balance tier over the 15-day window to reach a specific total Alpha Points goal.</p>
+        <p>Plan your daily Alpha token *purchase* volume based on your assumed constant balance tier over the 15-day window and the current promotion rules to reach a specific total Alpha Points goal.</p>
 
         <div id="loading">Loading calculator...</div>
 
@@ -175,6 +187,11 @@
                 </select>
             </div>
 
+             <div class="input-group">
+                <input type="checkbox" id="applyPromotion" checked>
+                <label for="applyPromotion">Apply "Double Volume" Promotion Rules (Assuming Eligible Trades)</label>
+            </div>
+
 
             <button id="calculateBtn">Calculate Daily Volume Plan</button>
 
@@ -191,16 +208,17 @@
                      <li><strong>Balance Points:</strong> Earned daily based on your asset balance tier. This calculator <strong>assumes your balance tier is constant for the full 15-day window</strong>. Total assumed balance points = daily balance points * 15 days.</li>
                      <li><strong>Volume Points:</strong> Earned daily based on your *daily* Alpha token purchase volume. The points for a given day (V_daily) are <code>floor(log₂(V_daily))</code> for V_daily >= $2, and 0 for V_daily < $2. Total volume points = sum of daily volume points over the 15-day window.</li>
                  </ul>
-                 <p>This calculator helps you figure out the required *daily purchase volume* needed to cover the points your *assumed 15-day balance points* don't provide, planning this volume over your specified number of trading days within that window.</p>
+                 <p><strong>"Double Volume" Promotion:</strong> If applied, daily purchase volume that is from BSC Alpha token purchases OR Limit buy orders is effectively double-counted towards the *daily Alpha Volume* used for point calculation. To minimize actual traded volume, this calculator assumes you use *only* eligible trade types (BSC purchases or Limit buys) during the promotion period.</p>
+                 <p>This calculator helps you figure out the required *minimum daily actual purchase volume* needed (using eligible trades under the promo, if applied) to cover the points your *assumed 15-day balance points* don't provide, planning this volume over your specified number of trading days within that window.</p>
              </div>
         </div>
 
 
         <div class="note">
-           This calculator assumes you will maintain the selected balance tier *consistently* for the entire 15-day rolling window used by Binance. It calculates the total points you would get from this balance over 15 days. It then figures out how many additional volume points are needed and provides a daily purchase volume plan over your specified trading days to earn those volume points with minimal volume. This plan assumes trading occurs on consecutive days starting from "Day 1". You only need to perform the *purchase* volume; selling does not contribute to points. Trading fees are not included.
+           This calculator assumes you will maintain the selected balance tier *consistently* for the entire 15-day rolling window used by Binance. It calculates the total points you would get from this balance over 15 days. It then figures out how many additional volume points are needed and provides a daily purchase volume plan over your specified trading days to earn those volume points with minimal volume. If the promotion is applied, the daily required volume calculation assumes you are performing *only eligible trades* (BSC purchases or Limit buys). This plan assumes trading occurs on consecutive days starting from "Day 1". You only need to perform the *purchase* volume; selling does not contribute to points. Trading fees are not included.
         </div>
         <div class="note">
-            Disclaimer: This is an unofficial calculator based on publicly available information and the explained interpretation of the rules. Actual points calculated by Binance may vary due to specific snapshot times, variations in your balance tier over the 15 days, token eligibility details, trading fees, or other factors not covered here. It serves as an estimation tool only.
+            Disclaimer: This is an unofficial calculator based on publicly available information and the explained interpretation of the rules, including the promotion. Actual points calculated by Binance may vary due to specific snapshot times, variations in your balance tier over the 15 days, token eligibility details, trading fees, the exact mix of eligible/non-eligible trades you perform daily, or other factors not covered here. It serves as an estimation tool only.
         </div>
 
     </div>
@@ -209,17 +227,17 @@
         # Python code running in Pyodide
         import math
 
-        def calculate_daily_volume_plan(target_total_points, num_days, daily_balance_points):
+        def calculate_daily_volume_plan(target_total_points, num_days, daily_balance_points, apply_promotion):
             """
             Calculates a daily purchase volume plan to reach a total points goal,
             assuming balance points are earned constantly over 15 days, and volume points
-            are earned over the specified num_days planning period.
-            Returns a list of tuples: [(day_number, daily_vol_points_needed, min_daily_volume), ...]
-            and summary info (total_vol_for_volume_plan, total_balance_points_15d, total_achievable_points).
+            are earned over the specified num_days planning period, considering the promotion.
+            Returns a list of tuples: [(day_number, daily_vol_points_needed, min_daily_actual_volume), ...]
+            and summary info (total_actual_vol_for_volume_plan, total_balance_points_15d, total_achievable_points).
             """
             if target_total_points < 0 or num_days <= 0 or daily_balance_points < 0:
                 # Invalid input, handled by JS validation
-                return ([], 0, 0, 0) # daily_plan, total_vol_for_volume_plan, total_balance_points_15d, total_achievable_points
+                return ([], 0, 0, 0) # daily_plan, total_actual_vol_for_volume_plan, total_balance_points_15d, total_achievable_points
 
             # 1. Calculate points earned from balance over the full 15-day window (User's requested assumption)
             total_balance_points_15d = daily_balance_points * 15
@@ -228,19 +246,19 @@
             remaining_volume_points_needed_for_plan = target_total_points - total_balance_points_15d
 
             daily_plan = []
-            required_total_volume_for_volume_plan = 0
+            required_total_actual_volume_for_volume_plan = 0
             achievable_volume_points_sum_in_plan = 0 # Track actual volume points earned by the plan over num_days
 
             if remaining_volume_points_needed_for_plan <= 0:
                 # Balance points already meet or exceed the target. No volume points needed from the plan.
                 # Plan is 0 volume each day for num_days.
                 for day in range(1, num_days + 1):
-                     daily_plan.append((day, 0, 0.00)) # Day #, Vol Points Needed, Min Volume
+                     daily_plan.append((day, 0, 0.00)) # Day #, Vol Points Needed, Min Actual Volume
                 achievable_volume_points_sum_in_plan = 0 # Explicitly set to 0
 
             else:
                 # 3. Distribute remaining volume points needed across num_days
-                # We want to assign points such that we use the lowest possible volume tiers.
+                # Calculate base points and extra points needed per day
                 points_base_per_day = remaining_volume_points_needed_for_plan // num_days # Integer division
                 extra_point_days_count = remaining_volume_points_needed_for_plan % num_days # Remainder
 
@@ -251,31 +269,40 @@
                 for _ in range(num_days - extra_point_days_count):
                      daily_point_targets_for_plan.append(points_base_per_day)
 
+
                 # 4. Create the daily plan based on calculated daily point targets
                 for day_index in range(num_days):
                     day_number = day_index + 1
                     daily_vol_points_in_plan = daily_point_targets_for_plan[day_index]
 
-                    # Calculate minimum daily volume needed for this many points
+                    # Calculate minimum daily *actual* volume needed for this many points
                     if daily_vol_points_in_plan <= 0:
-                         # To get 0 volume points daily, volume must be less than $2. Minimum needed is $0.00.
-                         min_daily_volume = 0.00
+                         # To get 0 volume points daily, volume must be less than $2 (standard rule).
+                         # If promo applies, less than $1 actual eligible volume gives < $2 effective.
+                         # Minimum actual volume is still $0.00 in either case.
+                         min_daily_actual_volume = 0.00
                     else:
-                         # To get P points (P>=1) daily from volume, you need Daily Volume >= 2^P
-                         min_daily_volume = math.pow(2, daily_vol_points_in_plan)
+                         # We need Daily Alpha Volume >= 2^daily_vol_points_in_plan
+                         effective_volume_needed = math.pow(2, daily_vol_points_in_plan)
 
-                    daily_plan.append((day_number, daily_vol_points_in_plan, min_daily_volume))
-                    required_total_volume_for_volume_plan += min_daily_volume
+                         if apply_promotion:
+                             # If promotion applies, assume user does only eligible trades.
+                             # Actual Volume = Effective Volume / 2
+                             min_daily_actual_volume = effective_volume_needed / 2.0
+                         else:
+                             # If promotion does NOT apply, Actual Volume = Effective Volume
+                             min_daily_actual_volume = effective_volume_needed
+
+                    daily_plan.append((day_number, daily_vol_points_in_plan, min_daily_actual_volume))
+                    required_total_actual_volume_for_volume_plan += min_daily_actual_volume
                     achievable_volume_points_sum_in_plan += daily_vol_points_in_plan # Sum the actual points earned per day in the plan
 
 
             # 5. Calculate total achievable points based on the model's assumptions
-            # This is assumed 15d balance points + volume points earned in the num_days plan
-            # Note: This differs slightly from Binance's potential actual calculation (summing daily balance+volume points over 15 days)
             total_achievable_points = total_balance_points_15d + achievable_volume_points_sum_in_plan
 
 
-            return (daily_plan, required_total_volume_for_volume_plan, total_balance_points_15d, total_achievable_points)
+            return (daily_plan, required_total_actual_volume_for_volume_plan, total_balance_points_15d, total_achievable_points)
 
     </script>
 
@@ -312,14 +339,14 @@
         }
 
         document.getElementById('calculateBtn').addEventListener('click', async () => {
-            // FIX: Corrected typo documentgetElementById -> document.getElementById
             const targetPointsInput = document.getElementById('targetPoints');
             const numDaysInput = document.getElementById('numDays');
             const balanceTierPointsSelect = document.getElementById('balanceTierPoints');
+            const applyPromotionCheckbox = document.getElementById('applyPromotion'); // Get the checkbox
 
             const outputDiv = document.getElementById('output');
             const errorDiv = document.getElementById('error');
-            const messageDiv = document.getElementById('message'); // Corrected typo here too
+            const messageDiv = document.getElementById('message');
 
             errorDiv.style.display = 'none'; // Hide previous errors
             errorDiv.textContent = '';
@@ -330,6 +357,7 @@
             const targetTotalPoints = parseInt(targetPointsInput.value);
             const numDays = parseInt(numDaysInput.value);
             const dailyBalancePoints = parseInt(balanceTierPointsSelect.value);
+            const applyPromotion = applyPromotionCheckbox.checked; // Get checkbox state
 
             // --- Input Validation ---
             if (isNaN(targetTotalPoints) || targetTotalPoints < 0) {
@@ -355,14 +383,13 @@
              // --- End Validation ---
 
 
-            // Call the Python function
+            // Call the Python function, passing the promotion flag
             try {
-                 const result = pyodide.globals.get('calculate_daily_volume_plan')(targetTotalPoints, numDays, dailyBalancePoints);
+                 const result = pyodide.globals.get('calculate_daily_volume_plan')(targetTotalPoints, numDays, dailyBalancePoints, applyPromotion);
                  const dailyPlan = result[0]; // List of (day, vol_pts, volume)
-                 const requiredTotalVolumeForVolumePlan = result[1];
+                 const requiredTotalActualVolumeForVolumePlan = result[1];
                  const totalBalancePoints15d = result[2];
                  const totalAchievablePoints = result[3];
-
 
                  let outputHtml = `<h3>Plan Summary</h3>`;
                  outputHtml += `<ul>`;
@@ -370,6 +397,7 @@
                  outputHtml += `<li>Planning Period for Volume Trading: <strong>${numDays} days</strong></li>`;
                  outputHtml += `<li>Assumed Consistent Daily Balance Tier: <strong>${dailyBalancePoints} points/day</strong></li>`;
                  outputHtml += `<li>Estimated Points from Balance over the 15-day window: <strong>${totalBalancePoints15d}</strong></li>`;
+                 outputHtml += `<li>"Double Volume" Promotion Applied: <strong>${applyPromotion ? 'Yes' : 'No'}</strong></li>`;
                  outputHtml += `</ul>`;
 
                  const remainingVolumePointsNeededForPlan = targetTotalPoints - totalBalancePoints15d;
@@ -392,6 +420,9 @@
                      outputHtml += `<div class="output-section">`;
                      outputHtml += `<h4>Daily Volume Trading Plan (to earn ${remainingVolumePointsNeededForPlan} Volume Points over ${numDays} days)</h4>`;
                      outputHtml += `<p>To reach your goal, you need to earn <strong>${remainingVolumePointsNeededForPlan} volume points</strong> in total during your ${numDays}-day trading plan period.</p>`;
+                     if (applyPromotion) {
+                         outputHtml += `<p><em>(Calculation assumes you make only eligible trades - BSC purchases or Limit buys - to minimize actual volume under the promotion).</em></p>`;
+                     }
 
 
                      // Group plan by required daily volume points and volume for cleaner output
@@ -409,16 +440,29 @@
                      // Sort groups by daily points descending, then volume descending
                      Object.values(planGroups).sort((a, b) => b.vol_pts - a.vol_pts || b.volume - a.volume).forEach(group => {
                          const daysList = group.days.join(', ');
-                         if (group.vol_pts === 0) {
-                             outputHtml += `<li>On Day(s) ${daysList}: Target <strong>0 Volume Points/day</strong> (requires daily purchase volume less than $2). Minimum daily purchase volume: <strong>${group.volume.toFixed(2)} USD</strong>.</li>`;
-                         } else {
-                              // Use standard JavaScript Math.pow here
-                              outputHtml += `<li>On Day(s) ${daysList}: Target <strong>${group.vol_pts} Volume Points/day</strong> (requires daily purchase volume of at least $${Math.pow(2, group.vol_pts).toFixed(2)}). Minimum daily purchase volume: <strong>${group.volume.toFixed(2)} USD</strong>.</li>`;
+                         let volumeExplanation = '';
+                         if (applyPromotion) {
+                            if (group.vol_pts > 0) {
+                                effectiveVolumeNeeded = Math.pow(2, group.vol_pts).toFixed(2);
+                                volumeExplanation = `(requires daily *effective* volume of at least $${effectiveVolumeNeeded}. Calculated assuming *actual* eligible volume of $${group.volume.toFixed(2)})`;
+                            } else {
+                                volumeExplanation = `(requires daily purchase volume less than $2)`;
+                            }
+                         } else { // No promotion
+                            if (group.vol_pts > 0) {
+                                volumeExplanation = `(requires daily purchase volume of at least $${Math.pow(2, group.vol_pts).toFixed(2)})`;
+                            } else {
+                                volumeExplanation = `(requires daily purchase volume less than $2)`;
+                            }
                          }
+
+
+                         outputHtml += `<li>On Day(s) ${daysList}: Target <strong>${group.vol_pts} Volume Points/day</strong> ${volumeExplanation}. Minimum daily purchase volume: <strong>${group.volume.toFixed(2)} USD</strong>.</li>`;
+
                      });
                      outputHtml += `</ul>`;
 
-                     outputHtml += `<p>Minimum Total Purchase Volume during your ${numDays}-day plan: <strong>${requiredTotalVolumeForVolumePlan.toFixed(2)} USD</strong></p>`;
+                     outputHtml += `<p>Minimum Total Purchase Volume during your ${numDays}-day plan: <strong>${requiredTotalActualVolumeForVolumePlan.toFixed(2)} USD</strong></p>`;
                      outputHtml += `</div>`; // End output-section
 
                      outputHtml += `<p>Total Estimated Achievable Points (Assumed 15-Day Balance + Volume in Plan): <strong>${totalAchievablePoints}</strong></p>`;
@@ -434,7 +478,7 @@
                     }
 
 
-                    if (requiredTotalVolumeForVolumePlan > 50000 || dailyPlan.some(day => day[2] > 20000)) {
+                    if (requiredTotalActualVolumeForVolumePlan > 50000 || dailyPlan.some(day => day[2] > 20000)) {
                          messageDiv.textContent += (messageDiv.textContent ? "\n" : "") + "Note: The required purchase volume (daily or total in plan) is substantial. Ensure you have sufficient capital, consider trading fees, and manage risk.";
                          messageDiv.style.display = 'block';
                     }
