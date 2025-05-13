@@ -1,503 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Binance Alpha Points Daily Plan (Promo)</title>
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="./favicon.ico" />
+    <!-- Preload is necessary because we show these images when we disconnect from the server,
+    but at that point we cannot load these images from the server -->
+    <link rel="preload" href="./assets/gradient-yHQUC_QB.png" as="image" />
+    <link rel="preload" href="./assets/noise-60BoTA8O.png" as="image" />
+    <!-- Preload the fonts -->
+    <link rel="preload" href="./assets/Lora-VariableFont_wght-B2ootaw-.ttf" as="font" crossorigin="anonymous" />
+    <link rel="preload" href="./assets/PTSans-Regular-CxL0S8W7.ttf" as="font" crossorigin="anonymous" />
+    <link rel="preload" href="./assets/PTSans-Bold-D9fedIX3.ttf" as="font" crossorigin="anonymous" />
+    <link rel="preload" href="./assets/FiraMono-Regular-BTCkDNvf.ttf" as="font" crossorigin="anonymous" />
+    <link rel="preload" href="./assets/FiraMono-Medium-DU3aDxX5.ttf" as="font" crossorigin="anonymous" />
+    <link rel="preload" href="./assets/FiraMono-Bold-CLVRCuM9.ttf" as="font" crossorigin="anonymous" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="a marimo app" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <link rel="manifest" href="./manifest.json" />
+
+    <script data-marimo="true">
+      function __resizeIframe(obj) {
+        var scrollbarHeight = 20; // Max between windows, mac, and linux
+
+        function setHeight() {
+          var element = obj.contentWindow.document.documentElement;
+          // If there is no vertical scrollbar, we don't need to resize the iframe
+          if (element.scrollHeight === element.clientHeight) {
+            return;
+          }
+
+          // Create a new height that includes the scrollbar height if it's visible
+          var hasHorizontalScrollbar = element.scrollWidth > element.clientWidth;
+          var newHeight = element.scrollHeight + (hasHorizontalScrollbar ? scrollbarHeight : 0);
+
+          // Only update the height if it's different from the current height
+          if (obj.style.height !== `${newHeight}px`) {
+            obj.style.height = `${newHeight}px`;
+          }
+        }
+
+        // Resize the iframe to the height of the content and bottom scrollbar height
+        setHeight();
+
+        // Resize the iframe when the content changes
+        const resizeObserver = new ResizeObserver((entries) => {
+          setHeight();
+        });
+        resizeObserver.observe(obj.contentWindow.document.body);
+      }
+    </script>
+    <marimo-filename hidden>notebook.py</marimo-filename>
+    <marimo-mode data-mode='read' hidden></marimo-mode>
+    <marimo-version data-version='0.13.7' hidden></marimo-version>
+    <marimo-user-config data-config='{"completion": {"activate_on_typing": true, "copilot": false}, "display": {"theme": "light", "cell_output": "above", "default_table_page_size": 10, "code_editor_font_size": 14, "dataframes": "rich", "default_width": "medium"}, "formatting": {"line_length": 79}, "keymap": {"preset": "default", "overrides": {}}, "runtime": {"auto_instantiate": true, "auto_reload": "off", "reactive_tests": true, "on_cell_change": "autorun", "watcher_on_save": "lazy", "output_max_bytes": 8000000, "std_stream_max_bytes": 1000000}, "save": {"autosave": "off", "autosave_delay": 1000, "format_on_save": false}, "package_management": {"manager": "pip"}, "server": {"browser": "default", "follow_symlink": false}, "language_servers": {"pylsp": {"enabled": true, "enable_mypy": true, "enable_ruff": true, "enable_flake8": false, "enable_pydocstyle": false, "enable_pylint": false, "enable_pyflakes": false}}, "snippets": {"custom_paths": [], "include_default_snippets": true}}' data-overrides='{}' hidden></marimo-user-config>
+    <marimo-app-config data-config='{"width": "full", "sql_output": "auto"}' hidden></marimo-app-config>
+    <marimo-server-token data-token='123' hidden></marimo-server-token>
+    <title>alpha points calc</title>
+    <script type="module" crossorigin src="./assets/index-4h4O6nRv.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DredxwTT.css">
+  <marimo-wasm hidden=""></marimo-wasm>
+    <script>
+        if (window.location.protocol === 'file:') {
+            alert('Warning: This file must be served by an HTTP server to function correctly.');
+        }
+    </script>
+    
     <style>
-        body {
-            font-family: sans-serif;
-            line-height: 1.6;
-            margin: 20px;
-            background-color: #f4f4f4;
-            color: #333;
+        #save-button {
+            display: none !important;
         }
-        .container {
-            max-width: 750px;
-            margin: auto;
-            background: #fff;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            color: #0056b3;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-         h2 {
-            color: #007bff;
-            text-align: center;
-            margin-bottom: 15px;
-            margin-top: 25px;
-        }
-        .input-group {
-            margin-bottom: 20px;
-        }
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #555;
-        }
-        .input-group input[type="number"],
-        .input-group select {
-            width: calc(100% - 18px);
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-size: 1em;
-            background-color: #fff;
-        }
-         .input-group input[type="checkbox"] {
-            margin-right: 8px;
-            vertical-align: middle;
-         }
-         .input-group label[for="applyPromotion"] {
-             display: inline-block;
-             font-weight: normal;
-             margin-bottom: 0;
-             vertical-align: middle;
-             cursor: pointer;
-         }
-
-        button {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            margin-top: 20px;
-        }
-        button:hover {
-            background-color: #218838;
-        }
-        #output {
-            margin-top: 30px;
-            padding: 20px;
-            border: 1px solid #c3e6cb;
-            border-radius: 4px;
-            background-color: #d4edda;
-            color: #155724;
-            text-align: left;
-            font-size: 1em;
-            word-break: break-word; /* Prevent overflow */
-        }
-        #output strong {
-             color: #0056b3;
-        }
-         #output ul {
-             padding-left: 20px;
-             margin: 15px 0 0 0;
-         }
-         #output li {
-             margin-bottom: 8px;
-         }
-
-        #loading {
-            text-align: center;
-            margin-top: 20px;
-            font-style: italic;
-            color: #666;
-        }
-        .note {
-            font-size: 0.9em;
-            color: #555;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px dashed #eee;
-        }
-         .rule-explanation {
-            font-size: 0.95em;
-            color: #333;
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 4px;
-         }
-         .rule-explanation strong {
-             color: #007bff;
-         }
-         .warning {
-            color: #ff9900;
-            margin-top: 15px;
-            font-weight: bold;
-            padding: 10px;
-            background-color: #fff3cd;
-            border: 1px solid #ffeeba;
-            border-radius: 4px;
-        }
-         .error {
-            color: #dc3545;
-            margin-top: 15px;
-            font-weight: bold;
-            padding: 10px;
-            background-color: #f8d7da;
-            border: 1px solid #f5c6cb;
-            border-radius: 4px;
-        }
-        .output-section {
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 1px solid #eee;
-        }
-        .output-section h4 {
-            margin-top: 0;
-            margin-bottom: 10px;
-            color: #007bff;
+        #filename-input {
+            display: none !important;
         }
     </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Binance Alpha Points Daily Planning</h1>
-        <p>Plan your daily Alpha token *purchase* volume based on your assumed constant balance tier over the 15-day window and the current promotion rules to reach a specific total Alpha Points goal.</p>
-
-        <div id="loading">Loading calculator...</div>
-
-        <div id="calculator" style="display: none;">
-            <h2>Set Your Goal & Conditions</h2>
-
-            <div class="input-group">
-                <label for="targetPoints">Target Total Alpha Points (Balance + Volume):</label>
-                <input type="number" id="targetPoints" value="75" min="0" step="1">
-            </div>
-
-             <div class="input-group">
-                <label for="numDays">Number of Trading Days (1-15) for this plan:</label>
-                <input type="number" id="numDays" value="15" min="1" max="15" step="1">
-            </div>
-
-            <div class="input-group">
-                <label for="balanceTierPoints">Assumed Consistent Daily Balance Tier (over the 15-day window):</label>
-                <select id="balanceTierPoints">
-                    <option value="0">$0 to < $100 (0 points/day)</option>
-                    <option value="1">$100 to < $1,000 (1 point/day)</option>
-                    <option value="2">$1,000 to < $10,000 (2 points/day)</option>
-                    <option value="3">$10,000 to < $100,000 (3 points/day)</option>
-                    <option value="4">$100,000 and above (4 points/day)</option>
-                </select>
-            </div>
-
-             <div class="input-group">
-                <input type="checkbox" id="applyPromotion" checked>
-                <label for="applyPromotion">Apply "Double Volume" Promotion Rules (Assuming Eligible Trades)</label>
-            </div>
-
-
-            <button id="calculateBtn">Calculate Daily Volume Plan</button>
-
-            <div id="output">
-                Enter your goal, days, and balance tier to calculate your daily trading plan.
-            </div>
-             <div id="message" class="warning" style="display: none;"></div>
-             <div id="error" class="error" style="display: none;"></div>
-
-             <div class="rule-explanation">
-                 <h2>How Points Are Calculated (Assumed Model for Planning)</h2>
-                 <p>Your total points are the sum of Balance Points and Volume Points over the last 15 days.</p>
-                 <ul>
-                     <li><strong>Balance Points:</strong> Earned daily based on your asset balance tier. This calculator <strong>assumes your balance tier is constant for the full 15-day window</strong>. Total assumed balance points = daily balance points * 15 days.</li>
-                     <li><strong>Volume Points:</strong> Earned daily based on your *daily* Alpha token purchase volume. The points for a given day (V_daily) are <code>floor(log₂(V_daily))</code> for V_daily >= $2, and 0 for V_daily < $2. Total volume points = sum of daily volume points over the 15-day window.</li>
-                 </ul>
-                 <p><strong>"Double Volume" Promotion:</strong> If applied, daily purchase volume that is from BSC Alpha token purchases OR Limit buy orders is effectively double-counted towards the *daily Alpha Volume* used for point calculation. To minimize actual traded volume, this calculator assumes you use *only* eligible trade types (BSC purchases or Limit buys) during the promotion period.</p>
-                 <p>This calculator helps you figure out the required *minimum daily actual purchase volume* needed (using eligible trades under the promo, if applied) to cover the points your *assumed 15-day balance points* don't provide, planning this volume over your specified number of trading days within that window.</p>
-             </div>
-        </div>
-
-
-        <div class="note">
-           This calculator assumes you will maintain the selected balance tier *consistently* for the entire 15-day rolling window used by Binance. It calculates the total points you would get from this balance over 15 days. It then figures out how many additional volume points are needed and provides a daily purchase volume plan over your specified trading days to earn those volume points with minimal volume. If the promotion is applied, the daily required volume calculation assumes you are performing *only eligible trades* (BSC purchases or Limit buys). This plan assumes trading occurs on consecutive days starting from "Day 1". You only need to perform the *purchase* volume; selling does not contribute to points. Trading fees are not included.
-        </div>
-        <div class="note">
-            Disclaimer: This is an unofficial calculator based on publicly available information and the explained interpretation of the rules, including the promotion. Actual points calculated by Binance may vary due to specific snapshot times, variations in your balance tier over the 15 days, token eligibility details, trading fees, the exact mix of eligible/non-eligible trades you perform daily, or other factors not covered here. It serves as an estimation tool only.
-        </div>
-
-    </div>
-
-    <script type="text/python">
-        # Python code running in Pyodide
-        import math
-
-        def calculate_daily_volume_plan(target_total_points, num_days, daily_balance_points, apply_promotion):
-            """
-            Calculates a daily purchase volume plan to reach a total points goal,
-            assuming balance points are earned constantly over 15 days, and volume points
-            are earned over the specified num_days planning period, considering the promotion.
-            Returns a list of tuples: [(day_number, daily_vol_points_needed, min_daily_actual_volume), ...]
-            and summary info (total_actual_vol_for_volume_plan, total_balance_points_15d, total_achievable_points).
-            """
-            if target_total_points < 0 or num_days <= 0 or daily_balance_points < 0:
-                # Invalid input, handled by JS validation
-                return ([], 0, 0, 0) # daily_plan, total_actual_vol_for_volume_plan, total_balance_points_15d, total_achievable_points
-
-            # 1. Calculate points earned from balance over the full 15-day window (User's requested assumption)
-            total_balance_points_15d = daily_balance_points * 15
-
-            # 2. Calculate remaining points needed from volume trading over the num_days planning period
-            remaining_volume_points_needed_for_plan = target_total_points - total_balance_points_15d
-
-            daily_plan = []
-            required_total_actual_volume_for_volume_plan = 0
-            achievable_volume_points_sum_in_plan = 0 # Track actual volume points earned by the plan over num_days
-
-            if remaining_volume_points_needed_for_plan <= 0:
-                # Balance points already meet or exceed the target. No volume points needed from the plan.
-                # Plan is 0 volume each day for num_days.
-                for day in range(1, num_days + 1):
-                     daily_plan.append((day, 0, 0.00)) # Day #, Vol Points Needed, Min Actual Volume
-                achievable_volume_points_sum_in_plan = 0 # Explicitly set to 0
-
-            else:
-                # 3. Distribute remaining volume points needed across num_days
-                # Calculate base points and extra points needed per day
-                points_base_per_day = remaining_volume_points_needed_for_plan // num_days # Integer division
-                extra_point_days_count = remaining_volume_points_needed_for_plan % num_days # Remainder
-
-                # Create a list of daily point targets for the num_days plan
-                daily_point_targets_for_plan = []
-                for _ in range(extra_point_days_count):
-                    daily_point_targets_for_plan.append(points_base_per_day + 1)
-                for _ in range(num_days - extra_point_days_count):
-                     daily_point_targets_for_plan.append(points_base_per_day)
-
-
-                # 4. Create the daily plan based on calculated daily point targets
-                for day_index in range(num_days):
-                    day_number = day_index + 1
-                    daily_vol_points_in_plan = daily_point_targets_for_plan[day_index]
-
-                    # Calculate minimum daily *actual* volume needed for this many points
-                    if daily_vol_points_in_plan <= 0:
-                         # To get 0 volume points daily, volume must be less than $2 (standard rule).
-                         # If promo applies, less than $1 actual eligible volume gives < $2 effective.
-                         # Minimum actual volume is still $0.00 in either case.
-                         min_daily_actual_volume = 0.00
-                    else:
-                         # We need Daily Alpha Volume >= 2^daily_vol_points_in_plan
-                         effective_volume_needed = math.pow(2, daily_vol_points_in_plan)
-
-                         if apply_promotion:
-                             # If promotion applies, assume user does only eligible trades.
-                             # Actual Volume = Effective Volume / 2
-                             min_daily_actual_volume = effective_volume_needed / 2.0
-                         else:
-                             # If promotion does NOT apply, Actual Volume = Effective Volume
-                             min_daily_actual_volume = effective_volume_needed
-
-                    daily_plan.append((day_number, daily_vol_points_in_plan, min_daily_actual_volume))
-                    required_total_actual_volume_for_volume_plan += min_daily_actual_volume
-                    achievable_volume_points_sum_in_plan += daily_vol_points_in_plan # Sum the actual points earned per day in the plan
-
-
-            # 5. Calculate total achievable points based on the model's assumptions
-            total_achievable_points = total_balance_points_15d + achievable_volume_points_sum_in_plan
-
-
-            return (daily_plan, required_total_actual_volume_for_volume_plan, total_balance_points_15d, total_achievable_points)
-
-    </script>
-
-    <script type="text/javascript">
-        let pyodide;
-        // No need to declare math here if using JS Math.pow
-
-        async function loadPyodideAndRun() {
-            // Show loading message, hide calculator
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('calculator').style.display = 'none';
-
-            try {
-                pyodide = await loadPyodide();
-
-                // Access the Python script embedded in the HTML
-                const pythonScript = document.querySelector('script[type="text/python"]').textContent;
-                await pyodide.runPythonAsync(pythonScript);
-
-                // No need to pyimport math if only using Math.pow in JS
-
-                // Hide loading, show calculator
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('calculator').style.display = 'block';
-
-                console.log("Pyodide and Python script loaded.");
-
-            } catch (e) {
-                 document.getElementById('loading').textContent = 'Failed to load calculator.';
-                 document.getElementById('error').textContent = `Error loading calculator: ${e}`;
-                 document.getElementById('error').style.display = 'block';
-                 console.error("Error loading Pyodide or script:", e);
-            }
-        }
-
-        document.getElementById('calculateBtn').addEventListener('click', async () => {
-            const targetPointsInput = document.getElementById('targetPoints');
-            const numDaysInput = document.getElementById('numDays');
-            const balanceTierPointsSelect = document.getElementById('balanceTierPoints');
-            const applyPromotionCheckbox = document.getElementById('applyPromotion'); // Get the checkbox
-
-            const outputDiv = document.getElementById('output');
-            const errorDiv = document.getElementById('error');
-            const messageDiv = document.getElementById('message');
-
-            errorDiv.style.display = 'none'; // Hide previous errors
-            errorDiv.textContent = '';
-            messageDiv.style.display = 'none'; // Hide previous messages
-            messageDiv.textContent = '';
-            outputDiv.innerHTML = 'Calculating...'; // Show thinking state
-
-            const targetTotalPoints = parseInt(targetPointsInput.value);
-            const numDays = parseInt(numDaysInput.value);
-            const dailyBalancePoints = parseInt(balanceTierPointsSelect.value);
-            const applyPromotion = applyPromotionCheckbox.checked; // Get checkbox state
-
-            // --- Input Validation ---
-            if (isNaN(targetTotalPoints) || targetTotalPoints < 0) {
-                errorDiv.textContent = "Please enter a valid non-negative whole number for Target Total Points.";
-                errorDiv.style.display = 'block';
-                outputDiv.innerHTML = 'Enter your goal, days, and balance tier to calculate your daily trading plan.';
-                return;
-            }
-
-            if (isNaN(numDays) || numDays < 1 || numDays > 15) {
-                errorDiv.textContent = "Please enter a valid number of trading days for your plan between 1 and 15.";
-                errorDiv.style.display = 'block';
-                 outputDiv.innerHTML = 'Enter your goal, days, and balance tier to calculate your daily trading plan.';
-                return;
-            }
-
-            if (isNaN(dailyBalancePoints) || dailyBalancePoints < 0 || dailyBalancePoints > 4) {
-                 errorDiv.textContent = "Invalid balance tier selected.";
-                 errorDiv.style.display = 'block';
-                 outputDiv.innerHTML = 'Enter your goal, days, and balance tier to calculate your daily trading plan.';
-                 return;
-            }
-             // --- End Validation ---
-
-
-            // Call the Python function, passing the promotion flag
-            try {
-                 const result = pyodide.globals.get('calculate_daily_volume_plan')(targetTotalPoints, numDays, dailyBalancePoints, applyPromotion);
-                 const dailyPlan = result[0]; // List of (day, vol_pts, volume)
-                 const requiredTotalActualVolumeForVolumePlan = result[1];
-                 const totalBalancePoints15d = result[2];
-                 const totalAchievablePoints = result[3];
-
-                 let outputHtml = `<h3>Plan Summary</h3>`;
-                 outputHtml += `<ul>`;
-                 outputHtml += `<li>Target Total Points Goal: <strong>${targetTotalPoints}</strong></li>`;
-                 outputHtml += `<li>Planning Period for Volume Trading: <strong>${numDays} days</strong></li>`;
-                 outputHtml += `<li>Assumed Consistent Daily Balance Tier: <strong>${dailyBalancePoints} points/day</strong></li>`;
-                 outputHtml += `<li>Estimated Points from Balance over the 15-day window: <strong>${totalBalancePoints15d}</strong></li>`;
-                 outputHtml += `<li>"Double Volume" Promotion Applied: <strong>${applyPromotion ? 'Yes' : 'No'}</strong></li>`;
-                 outputHtml += `</ul>`;
-
-                 const remainingVolumePointsNeededForPlan = targetTotalPoints - totalBalancePoints15d;
-
-                 if (remainingVolumePointsNeededForPlan <= 0) {
-                     outputHtml += `<div class="output-section">`;
-                     outputHtml += `<h4>Volume Trading Required in Plan Period: None</h4>`;
-                     outputHtml += `<p>Your assumed 15-day balance points (${totalBalancePoints15d}) already meet or exceed your target total points (${targetTotalPoints}).</p>`;
-                     outputHtml += `<p>Minimum Daily Purchase Volume Required during your ${numDays}-day plan: <strong>$0.00</strong></p>`;
-                     outputHtml += `<p>Resulting Total Purchase Volume during your ${numDays}-day plan: <strong>$0.00</strong></p>`;
-                     outputHtml += `</div>`;
-                     outputHtml += `<p>Total Estimated Achievable Points (Assumed 15-Day Balance + Volume in Plan): <strong>${totalAchievablePoints}</strong></p>`;
-
-                     if (totalAchievablePoints > targetTotalPoints) {
-                          messageDiv.textContent = `Note: Your assumed 15-day balance points alone (${totalBalancePoints15d}) exceed your target (${targetTotalPoints}). The estimated total achievable points are ${totalAchievablePoints}.`;
-                          messageDiv.style.display = 'block';
-                     }
-
-                 } else {
-                     outputHtml += `<div class="output-section">`;
-                     outputHtml += `<h4>Daily Volume Trading Plan (to earn ${remainingVolumePointsNeededForPlan} Volume Points over ${numDays} days)</h4>`;
-                     outputHtml += `<p>To reach your goal, you need to earn <strong>${remainingVolumePointsNeededForPlan} volume points</strong> in total during your ${numDays}-day trading plan period.</p>`;
-                     if (applyPromotion) {
-                         outputHtml += `<p><em>(Calculation assumes you make only eligible trades - BSC purchases or Limit buys - to minimize actual volume under the promotion).</em></p>`;
-                     }
-
-
-                     // Group plan by required daily volume points and volume for cleaner output
-                     const planGroups = dailyPlan.reduce((acc, [day, vol_pts, volume]) => {
-                         // Use volume.toFixed(2) in key to group identical volumes precisely
-                         const key = `${vol_pts}_${volume.toFixed(2)}`;
-                         if (!acc[key]) {
-                             acc[key] = { vol_pts: vol_pts, volume: volume, days: [] };
-                         }
-                         acc[key].days.push(day);
-                         return acc;
-                     }, {});
-
-                     outputHtml += `<ul>`;
-                     // Sort groups by daily points descending, then volume descending
-                     Object.values(planGroups).sort((a, b) => b.vol_pts - a.vol_pts || b.volume - a.volume).forEach(group => {
-                         const daysList = group.days.join(', ');
-                         let volumeExplanation = '';
-                         if (applyPromotion) {
-                            if (group.vol_pts > 0) {
-                                effectiveVolumeNeeded = Math.pow(2, group.vol_pts).toFixed(2);
-                                volumeExplanation = `(requires daily *effective* volume of at least $${effectiveVolumeNeeded}. Calculated assuming *actual* eligible volume of $${group.volume.toFixed(2)})`;
-                            } else {
-                                volumeExplanation = `(requires daily purchase volume less than $2)`;
-                            }
-                         } else { // No promotion
-                            if (group.vol_pts > 0) {
-                                volumeExplanation = `(requires daily purchase volume of at least $${Math.pow(2, group.vol_pts).toFixed(2)})`;
-                            } else {
-                                volumeExplanation = `(requires daily purchase volume less than $2)`;
-                            }
-                         }
-
-
-                         outputHtml += `<li>On Day(s) ${daysList}: Target <strong>${group.vol_pts} Volume Points/day</strong> ${volumeExplanation}. Minimum daily purchase volume: <strong>${group.volume.toFixed(2)} USD</strong>.</li>`;
-
-                     });
-                     outputHtml += `</ul>`;
-
-                     outputHtml += `<p>Minimum Total Purchase Volume during your ${numDays}-day plan: <strong>${requiredTotalActualVolumeForVolumePlan.toFixed(2)} USD</strong></p>`;
-                     outputHtml += `</div>`; // End output-section
-
-                     outputHtml += `<p>Total Estimated Achievable Points (Assumed 15-Day Balance + Volume in Plan): <strong>${totalAchievablePoints}</strong></p>`;
-
-
-                    // Check if the calculated achievable points (based on the model) match the target
-                    // This should only happen if totalBalancePoints15d > targetTotalPoints, handled above
-                    // If remainingVolumePointsNeededForPlan was > 0, achievable_volume_points_sum_in_plan should exactly equal it
-                    // So totalAchievablePoints should exactly match targetTotalPoints in this else block
-                    if (totalAchievablePoints !== targetTotalPoints) {
-                         errorDiv.textContent += (errorDiv.textContent ? "\n" : "") + `Internal Error: Achievable total points based on the plan model (${totalAchievablePoints}) do not exactly match the target (${targetTotalPoints}) when volume points were required. Please check inputs or logic.`;
-                         errorDiv.style.display = 'block';
-                    }
-
-
-                    if (requiredTotalActualVolumeForVolumePlan > 50000 || dailyPlan.some(day => day[2] > 20000)) {
-                         messageDiv.textContent += (messageDiv.textContent ? "\n" : "") + "Note: The required purchase volume (daily or total in plan) is substantial. Ensure you have sufficient capital, consider trading fees, and manage risk.";
-                         messageDiv.style.display = 'block';
-                    }
-                 }
-
-                 outputDiv.innerHTML = outputHtml;
-
-
-            } catch (e) {
-                 errorDiv.textContent = `Calculation error: ${e}`;
-                 errorDiv.style.display = 'block';
-                 outputDiv.innerHTML = 'Enter your goal, days, and balance tier to calculate your daily trading plan.';
-                 console.error("Calculation error:", e);
-            }
-        });
-
-        // Load Pyodide when the page loads
-        loadPyodideAndRun();
-
-    </script>
-</body>
+    <marimo-code hidden="" data-show-code="false">import%20marimo%0A%0A__generated_with%20%3D%20%220.13.7%22%0Aapp%20%3D%20marimo.App(width%3D%22full%22)%0A%0A%0A%40app.cell%0Adef%20_()%3A%0A%20%20%20%20import%20marimo%20as%20mo%0A%20%20%20%20import%20math%0A%0A%20%20%20%20%23%20Optional%3A%20Uncomment%20to%20set%20a%20theme%20if%20you%20like%0A%20%20%20%20%23%20mo.set_theme(%22light%22)%0A%20%20%20%20return%20math%2C%20mo%0A%0A%0A%40app.cell%0Adef%20_(mo)%3A%0A%20%20%20%20mo.md(%0A%20%20%20%20%20%20%20%20f%22%22%22%0A%20%20%20%20%23%20Binance%20Alpha%20Points%20Daily%20Planning%0A%20%20%20%20Plan%20your%20daily%20Alpha%20token%20*purchase*%20volume%20based%20on%20your%20expected%20daily%20balance%20tier%20to%20reach%20a%20specific%20total%20Alpha%20Points%20goal%20over%20a%20set%20number%20of%20days%2C%20minimizing%20unnecessary%20volume.%0A%20%20%20%20%22%22%22%0A%20%20%20%20)%0A%20%20%20%20return%0A%0A%0A%40app.cell%0Adef%20_(mo)%3A%0A%20%20%20%20%23%20Cell%203%0A%20%20%20%20mo.vstack(%5B%0A%20%20%20%20%20%20%20%20mo.md(%22---%22)%2C%20%23%20Horizontal%20rule%0A%20%20%20%20%20%20%20%20mo.md(%22%23%23%20Set%20Your%20Goal%20%26%20Conditions%22)%0A%20%20%20%20%5D)%0A%20%20%20%20return%0A%0A%0A%40app.cell%0Adef%20_(mo)%3A%0A%20%20%20%20target_points%20%3D%20mo.ui.number(%0A%20%20%20%20%20%20%20%20start%3D0%2C%0A%20%20%20%20%20%20%20%20stop%3D1000%2C%20%20%23%20You%20can%20adjust%20the%20practical%20upper%20limit%0A%20%20%20%20%20%20%20%20step%3D1%2C%0A%20%20%20%20%20%20%20%20value%3D200%2C%0A%20%20%20%20%20%20%20%20label%3D%22Target%20Total%20Alpha%20Points%20(Balance%20%2B%20Volume)%3A%22%2C%0A%20%20%20%20)%0A%0A%20%20%20%20num_days%20%3D%20mo.ui.slider(%0A%20%20%20%20%20%20%20%20start%3D1%2C%0A%20%20%20%20%20%20%20%20stop%3D15%2C%0A%20%20%20%20%20%20%20%20step%3D1%2C%0A%20%20%20%20%20%20%20%20value%3D15%2C%0A%20%20%20%20%20%20%20%20label%3D%22Number%20of%20Trading%20Days%20(1-15)%20for%20this%20plan%3A%22%2C%0A%20%20%20%20)%0A%0A%20%20%20%20balance_tier_options%20%3D%20%7B%0A%20%20%20%20%20%20%20%20%22%240%20to%20%3C%20%24100%20(0%20points%2Fday)%22%3A%200%2C%0A%20%20%20%20%20%20%20%20%22%24100%20to%20%3C%20%241%2C000%20(1%20point%2Fday)%22%3A%201%2C%0A%20%20%20%20%20%20%20%20%22%241%2C000%20to%20%3C%20%2410%2C000%20(2%20points%2Fday)%22%3A%202%2C%0A%20%20%20%20%20%20%20%20%22%2410%2C000%20to%20%3C%20%24100%2C000%20(3%20points%2Fday)%22%3A%203%2C%0A%20%20%20%20%20%20%20%20%22%24100%2C000%20and%20above%20(4%20points%2Fday)%22%3A%204%2C%0A%20%20%20%20%7D%0A%20%20%20%20balance_tier_points%20%3D%20mo.ui.dropdown(%0A%20%20%20%20%20%20%20%20options%3Dbalance_tier_options%2C%0A%20%20%20%20%20%20%20%20value%3D%22%240%20to%20%3C%20%24100%20(0%20points%2Fday)%22%2C%0A%20%20%20%20%20%20%20%20label%3D%22Expected%20Consistent%20Daily%20Balance%20Tier%3A%22%2C%0A%20%20%20%20)%0A%0A%20%20%20%20volume_bonus_active%20%3D%20mo.ui.checkbox(%0A%20%20%20%20%20%20%20%20value%3DFalse%2C%20%20%23%20Default%20to%20bonus%20NOT%20being%20active%0A%20%20%20%20%20%20%20%20label%3D%22Activate%20Volume%20Bonus%20Period%20(purchase%20volume%20counts%20as%20double%20for%20points%20calculation)%22%0A%20%20%20%20)%0A%20%20%20%20return%20balance_tier_points%2C%20num_days%2C%20target_points%2C%20volume_bonus_active%0A%0A%0A%40app.cell%0Adef%20_(balance_tier_points%2C%20mo%2C%20num_days%2C%20target_points%2C%20volume_bonus_active)%3A%0A%20%20%20%20mo.vstack(%5B%0A%20%20%20%20%20%20%20%20target_points%2C%0A%20%20%20%20%20%20%20%20num_days%2C%0A%20%20%20%20%20%20%20%20balance_tier_points%2C%0A%20%20%20%20%20%20%20%20volume_bonus_active.left()%0A%20%20%20%20%5D)%0A%20%20%20%20return%0A%0A%0A%40app.cell%0Adef%20_(math)%3A%0A%20%20%20%20%23%20Cell%206%0A%20%20%20%20def%20calculate_daily_volume_plan(target_total_points_val%2C%20num_days_val%2C%20daily_balance_points_val%2C%20bonus_active_flag)%3A%20%23%20ADDED%20bonus_active_flag%0A%20%20%20%20%20%20%20%20%22%22%22%0A%20%20%20%20%20%20%20%20Calculates%20a%20daily%20purchase%20volume%20plan.%0A%20%20%20%20%20%20%20%20bonus_active_flag%3A%20bool%2C%20True%20if%20volume%20bonus%20is%20active.%0A%20%20%20%20%20%20%20%20%22%22%22%0A%20%20%20%20%20%20%20%20if%20not%20(isinstance(target_total_points_val%2C%20(int%2C%20float))%20and%20target_total_points_val%20%3E%3D%200)%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20return%20(%5B%5D%2C%200%2C%200%2C%200%2C%20%22Error%3A%20Target%20points%20must%20be%20non-negative.%22)%0A%20%20%20%20%20%20%20%20if%20not%20(isinstance(num_days_val%2C%20int)%20and%201%20%3C%3D%20num_days_val%20%3C%3D%2015)%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20return%20(%5B%5D%2C%200%2C%200%2C%200%2C%20%22Error%3A%20Number%20of%20days%20must%20be%20between%201%20and%2015.%22)%0A%20%20%20%20%20%20%20%20if%20not%20(isinstance(daily_balance_points_val%2C%20int)%20and%200%20%3C%3D%20daily_balance_points_val%20%3C%3D%204)%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20return%20(%5B%5D%2C%200%2C%200%2C%200%2C%20%22Error%3A%20Invalid%20daily%20balance%20points.%22)%0A%0A%20%20%20%20%20%20%20%20total_balance_points_calc%20%3D%20daily_balance_points_val%20*%20num_days_val%0A%20%20%20%20%20%20%20%20remaining_volume_points_needed%20%3D%20target_total_points_val%20-%20total_balance_points_calc%0A%0A%20%20%20%20%20%20%20%20daily_plan%20%3D%20%5B%5D%0A%20%20%20%20%20%20%20%20required_total_actual_volume_for_volume_points%20%3D%200.0%20%23%20Tracks%20actual%20USD%20spent%0A%20%20%20%20%20%20%20%20achievable_volume_points_sum%20%3D%200%0A%0A%20%20%20%20%20%20%20%20if%20remaining_volume_points_needed%20%3C%3D%200%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20for%20day%20in%20range(1%2C%20num_days_val%20%2B%201)%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20daily_plan.append(%7B%22day%22%3A%20day%2C%20%22vol_points_needed%22%3A%200%2C%20%22min_volume%22%3A%200.00%2C%20%22effective_volume_for_points%22%3A%200.00%7D)%0A%20%20%20%20%20%20%20%20else%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20points_base_per_day%20%3D%20remaining_volume_points_needed%20%2F%2F%20num_days_val%0A%20%20%20%20%20%20%20%20%20%20%20%20extra_point_days_count%20%3D%20int(remaining_volume_points_needed%20%25%20num_days_val)%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20daily_point_targets%20%3D%20%5B%5D%0A%20%20%20%20%20%20%20%20%20%20%20%20for%20_%20in%20range(extra_point_days_count)%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20daily_point_targets.append(points_base_per_day%20%2B%201)%0A%20%20%20%20%20%20%20%20%20%20%20%20for%20_%20in%20range(num_days_val%20-%20extra_point_days_count)%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20daily_point_targets.append(points_base_per_day)%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20for%20day_index%20in%20range(num_days_val)%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20day_number%20%3D%20day_index%20%2B%201%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20daily_target_volume_points%20%3D%20daily_point_targets%5Bday_index%5D%20%23%20These%20are%20the%20points%20we%20want%20from%20volume%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20actual_min_daily_volume_to_spend%20%3D%200.00%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20effective_volume_for_points_calc%20%3D%200.00%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20if%20daily_target_volume_points%20%3E%200%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20Volume%20(V)%20needed%20for%20P%20points%20is%20V%20%3D%202%5EP%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20This%20is%20the%20*effective*%20volume%20needed%20for%20points.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20effective_volume_for_points_calc%20%3D%20math.pow(2%2C%20daily_target_volume_points)%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20if%20bonus_active_flag%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20To%20get%20points%20for%20effective_volume_for_points_calc%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20actual%20spend%20needs%20to%20be%20half%20if%20bonus%20is%20active.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20Actual_Spend%20*%202%20%3D%20effective_volume_for_points_calc%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20actual_min_daily_volume_to_spend%20%3D%20effective_volume_for_points_calc%20%2F%202.0%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20However%2C%20the%20base%20rule%20V_daily%20%3E%3D%20%242%20still%20applies%20to%20actual%20spend%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20to%20get%20*any*%20volume%20points.%20If%202%5EP%20%2F%202%20%3C%20%242%2C%20but%20we%20still%20need%20P%20%3E%200%20points%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20we%20must%20spend%20at%20least%20%242.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20Example%3A%20Need%201%20point%20(effective%20%242).%20With%20bonus%2C%20actual%20spend%20%241.%20But%20%241%20%3C%20%242%2C%20so%200%20points.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20To%20get%201%20point%20(effective%20%242)%20with%20bonus%2C%20you'd%20effectively%20target%202%20points%20(effective%20%244)%2C%20spend%20%242.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20This%20interpretation%20means%3A%20to%20get%20P%20points%2C%20the%20*effective*%20volume%20(actual_spend%20*%202%20or%20actual_spend)%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20must%20be%20%3E%3D%202%5EP.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20The%20current%20logic%20says%3A%20what%20is%20the%20*actual%20minimum%20spend*%20to%20get%20%60daily_target_volume_points%60%3F%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20If%20%60daily_target_volume_points%60%20%3D%201%20(effective%20volume%20%242)%2C%20with%20bonus%2C%20actual%20spend%20%241.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20If%20%60daily_target_volume_points%60%20%3D%202%20(effective%20volume%20%244)%2C%20with%20bonus%2C%20actual%20spend%20%242.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20The%20smallest%20actual%20spend%20to%20get%20%3E0%20points%20is%20%242%20(which%20would%20give%202%20points%20with%20bonus%2C%20floor(log2(2*2))%20%3D%202)%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20Re-thinking%20the%20bonus%20application%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20Points%20%3D%20floor(log2(V_effective_daily))%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20V_effective_daily%20%3D%20V_actual_daily%20*%202%20(if%20bonus)%20else%20V_actual_daily%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20To%20get%20P%20points%3A%20P%20%3C%3D%20log2(V_effective_daily)%20%20%3D%3E%202%5EP%20%3C%3D%20V_effective_daily%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20So%2C%20V_actual_daily%20%3E%3D%20(2%5EP)%20%2F%202%20if%20bonus%2C%20or%20V_actual_daily%20%3E%3D%202%5EP%20if%20no%20bonus.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20The%20constraint%20V_actual_daily%20%3E%3D%20%242%20for%20ANY%20points%20still%20holds.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20If%20(2%5EP)%2F2%20%3C%20%242%2C%20but%20P%20%3E%200%2C%20we%20MUST%20spend%20at%20least%20%242.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20If%20we%20spend%20%242%20with%20bonus%2C%20effective%20volume%20is%20%244.%20Points%20%3D%20floor(log2(4))%20%3D%202.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20So%2C%20if%20we%20target%20P%3D1%20point%20with%20bonus%2C%20we%20need%20effective%20V%3D%242.%20Actual%20spend%20is%20%241.%20BUT%20%241%20yields%200%20points.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20This%20implies%20we%20can't%20target%20P%3D1%20with%20bonus%20if%20we%20stick%20to%20minimal%20volume.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20The%20minimum%20actual%20spend%20of%20%242%20with%20bonus%20yields%20P%3D2.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20Let's%20stick%20to%20the%20initial%20interpretation%3A%20if%20you%20*target*%20P%20points%2C%20what's%20the%20minimum%20actual%20volume%3F%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20Minimum%20effective%20volume%20for%20P%20points%20is%202%5EP.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20If%20bonus%20active%2C%20actual_volume_needed%20%3D%20(2%5EP)%20%2F%202.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20This%20actual_volume_needed%20must%20still%20be%20%3E%3D%20%242%20to%20earn%20*any*%20points.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20If%20(2%5EP)%2F2%20%3C%20%242%2C%20and%20P%20%3E%200%2C%20then%20this%20P%20cannot%20be%20achieved%20with%20minimal%20volume%20under%20bonus%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20unless%20we%20accept%20spending%20%242%20(which%20would%20give%20more%20points).%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20This%20isn't%20quite%20right.%20The%20rule%20is%20%22purchase%20volume%20counts%20as%20double%22.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20So%20if%20I%20spend%20%24X%2C%20it's%20treated%20as%20if%20I%20spent%20%242X%20for%20points.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20Points(X_actual)%20%3D%20floor(log2(X_actual%20*%202))%20if%20bonus%20and%20X_actual%20%3E%3D%20%242%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20Points(X_actual)%20%3D%20floor(log2(X_actual))%20if%20no%20bonus%20and%20X_actual%20%3E%3D%20%242%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20To%20get%20P_target%20points%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20P_target%20%3C%3D%20log2(X_actual%20*%202)%20%20%3D%3E%202%5E(P_target)%20%3C%3D%20X_actual%20*%202%20%3D%3E%20X_actual%20%3E%3D%202%5E(P_target)%20%2F%202%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20P_target%20%3C%3D%20log2(X_actual)%20%20%20%20%20%20%3D%3E%202%5E(P_target)%20%3C%3D%20X_actual%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20So%2C%20actual_min_daily_volume_to_spend%20%3D%20math.pow(2%2C%20daily_target_volume_points)%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20if%20bonus_active_flag%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20%20%20%20actual_min_daily_volume_to_spend%20%2F%3D%202.0%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20The%20constraint%20is%3A%20actual%20spend%20must%20be%20%3E%3D%20%242%20to%20get%20ANY%20volume%20points.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20If%20%60actual_min_daily_volume_to_spend%60%20calculated%20above%20is%20%3C%20%242%2C%20AND%20%60daily_target_volume_points%60%20%3E%200%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20then%20spending%20this%20amount%20gives%200%20points.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20To%20get%20%60daily_target_volume_points%60%20%3E%200%2C%20the%20%60actual_min_daily_volume_to_spend%60%20must%20be%20at%20least%20%242.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20If%20we%20must%20spend%20%242%20(minimum)%2C%20with%20bonus%2C%20effective%20is%20%244%2C%20points%20%3D%202.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20This%20means%20if%20%60daily_target_volume_points%60%20%3D%201%2C%20it's%20%22harder%22%20to%20hit%20with%20bonus%20if%20interpreted%20strictly.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20Let's%20assume%20the%20user%20wants%20%60daily_target_volume_points%60.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20The%20%60effective_volume_for_points_calc%60%20is%20still%20%602%5Edaily_target_volume_points%60.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20If%20bonus%20active%2C%20the%20actual%20spend%20needed%20is%20%60effective_volume_for_points_calc%20%2F%202%60.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20The%20points%20awarded%20will%20be%20based%20on%20%60actual_spend%20*%202%60.%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20actual_min_daily_volume_to_spend%20%3D%20effective_volume_for_points_calc%20%2F%202.0%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20else%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20actual_min_daily_volume_to_spend%20%3D%20effective_volume_for_points_calc%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20Crucial%3A%20To%20earn%20*any*%20volume%20points%2C%20actual%20spend%20must%20be%20%3E%3D%20%242.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20If%20the%20calculated%20actual_min_daily_volume_to_spend%20is%20%3C%20%242%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20but%20we%20are%20targeting%20%3E%200%20points%2C%20we%20must%20spend%20at%20least%20%242.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20If%20we%20spend%20%242%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20%20%20-%20No%20bonus%3A%20effective%20volume%20%242%2C%20points%20%3D%20floor(log2(2))%20%3D%201.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20%20%20-%20Bonus%3A%20effective%20volume%20%244%2C%20points%20%3D%20floor(log2(4))%20%3D%202.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20if%20daily_target_volume_points%20%3E%200%20and%20actual_min_daily_volume_to_spend%20%3C%202.00%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20This%20situation%20means%20that%20to%20get%20the%20target%20points%2C%20the%20ideal%20actual%20spend%20is%20%3C%20%242.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20But%20spending%20%3C%20%242%20yields%200%20points.%20So%20we%20*must*%20spend%20%242%20if%20we%20want%20points.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20If%20we%20spend%20%242%2C%20the%20points%20earned%20might%20be%20different%20from%20daily_target_volume_points.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20This%20makes%20the%20%22minimal%20volume%20to%20hit%20*exact*%20daily_target_volume_points%22%20tricky.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20For%20simplicity%2C%20let's%20assume%20the%20user%20*will*%20spend%20at%20least%20%242%20if%20points%20%3E%200%20are%20targeted.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20And%20the%20points%20distribution%20should%20reflect%20this.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20Let's%20redefine%3A%20%60daily_target_volume_points%60%20are%20the%20points%20we%20*want%20to%20achieve*.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20The%20%60effective_volume_for_points_calc%60%20is%20%602%5Edaily_target_volume_points%60.%20This%20is%20the%20volume%20tier.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20If%20bonus%20is%20active%2C%20%60actual_min_daily_volume_to_spend%20%3D%20effective_volume_for_points_calc%20%2F%202.0%60.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20If%20not%2C%20%60actual_min_daily_volume_to_spend%20%3D%20effective_volume_for_points_calc%60.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20This%20%60actual_min_daily_volume_to_spend%60%20is%20what%20they%20need%20to%20buy.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20The%20points%20they%20GET%20from%20this%20%60actual_min_daily_volume_to_spend%60%20are%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20current_day_achieved_points%20%3D%200%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20if%20actual_min_daily_volume_to_spend%20%3E%3D%202.00%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20effective_spend_for_calc%20%3D%20actual_min_daily_volume_to_spend%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20if%20bonus_active_flag%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20effective_spend_for_calc%20*%3D%202.0%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20current_day_achieved_points%20%3D%20math.floor(math.log2(effective_spend_for_calc))%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20else%3A%20%23%20actual_min_daily_volume_to_spend%20%3C%20%242%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20current_day_achieved_points%20%3D%200%20%23%20Spending%20less%20than%20%242%20gives%200%20points%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20If%20current_day_achieved_points%20%3C%20daily_target_volume_points%2C%20our%20initial%20actual_spend%20was%20too%20low.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20This%20happens%20if%20(2%5EP)%2F2%20%3C%20%242%20for%20P%3D1%20with%20bonus.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20If%20P_target%3D1%2C%20effective%3D2%2C%20actual_spend_ideal%3D1.%20But%20%241%20gives%200%20points.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20To%20get%20at%20least%201%20point%2C%20must%20spend%20%242%20(no%20bonus)%20-%3E%201%20pt.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20To%20get%20at%20least%201%20point%20(bonus)%2C%20must%20spend%20%242%20(actual)%20-%3E%20effective%20%244%20-%3E%202%20pts.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20This%20implies%20that%20with%20bonus%2C%20you%20can't%20get%20exactly%201%20point%20as%20the%20minimum.%20You%20get%202%20points%20with%20%242%20spend.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20The%20point%20distribution%20(daily_point_targets)%20is%20based%20on%20what's%20needed.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20We%20need%20to%20ensure%20that%20%60actual_min_daily_volume_to_spend%60%20generates%20AT%20LEAST%20%60daily_target_volume_points%60.%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20if%20current_day_achieved_points%20%3C%20daily_target_volume_points%20and%20daily_target_volume_points%20%3E%200%20%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20This%20means%20the%20calculated%20minimal%20spend%20(e.g.%20%241%20for%201%20point%20with%20bonus)%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20doesn't%20actually%20yield%20the%20target%20points%20because%20it's%20%3C%20%242.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20We%20must%20increase%20actual_min_daily_volume_to_spend%20until%20it%20does.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20Smallest%20actual%20spend%20for%20any%20points%20is%20%242.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20If%20we%20spend%20%242%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20%20%20-%20No%20bonus%3A%20yields%201%20point.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20%20%20-%20Bonus%3A%20yields%202%20points.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20if%20bonus_active_flag%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20if%20daily_target_volume_points%20%3D%3D%201%3A%20%23%20Cannot%20achieve%201%20point%20with%20bonus%20by%20spending%20%3C%20%242.%20Min%20spend%20%242%20gives%202%20points.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20actual_min_daily_volume_to_spend%20%3D%202.00%20%23%20This%20will%20give%202%20points%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20effective_volume_for_points_calc%20%3D%204.00%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20achievable_volume_points_sum%20%2B%3D%202%20%23%20We%20will%20achieve%202%20points%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20else%3A%20%23%20daily_target_volume_points%20%3E%3D2%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20The%20formula%20actual_min_daily_volume_to_spend%20%3D%20(2%5EP)%2F2%20should%20be%20fine%20if%20P%3E%3D2%2C%20as%20(2%5EP)%2F2%20%3E%3D%20%242%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20pass%20%23%20Initial%20calc%20should%20be%20fine%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20else%3A%20%23%20No%20bonus%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20if%20daily_target_volume_points%20%3E%3D%201%3A%20%23%20Target%201%20point%2C%20no%20bonus%2C%20spend%20%242.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20actual_min_daily_volume_to_spend%20%3D%202.00%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20effective_volume_for_points_calc%20%3D%202.00%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20achievable_volume_points_sum%20%2B%3D%20daily_target_volume_points%20%23%20Assume%20it%20achieves%20it%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20else%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20achievable_volume_points_sum%20%2B%3D%20daily_target_volume_points%20%23%20Add%20target%20if%20initial%20calc%20is%20sufficient%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20else%3A%20%23%20daily_target_volume_points%20is%200%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20achievable_volume_points_sum%20%2B%3D%200%20%23%20No%20points%20targeted%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20daily_plan.append(%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22day%22%3A%20day_number%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22vol_points_needed%22%3A%20daily_target_volume_points%2C%20%23%20What%20was%20targeted%20for%20the%20day%20based%20on%20distribution%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22min_volume%22%3A%20actual_min_daily_volume_to_spend%2C%20%23%20Actual%20USD%20to%20spend%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22effective_volume_for_points%22%3A%20effective_volume_for_points_calc%20if%20daily_target_volume_points%20%3E%200%20else%200.00%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%7D)%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20required_total_actual_volume_for_volume_points%20%2B%3D%20actual_min_daily_volume_to_spend%0A%0A%20%20%20%20%20%20%20%20%23%20Recalculate%20actual%20achievable_volume_points_sum%20based%20on%20the%20final%20plan's%20actual%20spending%0A%20%20%20%20%20%20%20%20final_achieved_volume_points%20%3D%200%0A%20%20%20%20%20%20%20%20for%20day_plan_item%20in%20daily_plan%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20actual_spend%20%3D%20day_plan_item%5B%22min_volume%22%5D%0A%20%20%20%20%20%20%20%20%20%20%20%20day_pts%20%3D%200%0A%20%20%20%20%20%20%20%20%20%20%20%20if%20actual_spend%20%3E%3D%202.00%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20effective_v%20%3D%20actual_spend%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20if%20bonus_active_flag%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20effective_v%20*%3D%202.0%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20day_pts%20%3D%20math.floor(math.log2(effective_v))%0A%20%20%20%20%20%20%20%20%20%20%20%20final_achieved_volume_points%20%2B%3D%20day_pts%0A%0A%20%20%20%20%20%20%20%20achievable_volume_points_sum%20%3D%20final_achieved_volume_points%20%23%20Correct%20sum%20based%20on%20actual%20plan%0A%20%20%20%20%20%20%20%20total_achievable_points_calc%20%3D%20total_balance_points_calc%20%2B%20achievable_volume_points_sum%0A%0A%20%20%20%20%20%20%20%20return%20(daily_plan%2C%20required_total_actual_volume_for_volume_points%2C%20total_balance_points_calc%2C%20total_achievable_points_calc%2C%20None)%0A%20%20%20%20return%20(calculate_daily_volume_plan%2C)%0A%0A%0A%40app.cell%0Adef%20_(mo)%3A%0A%20%20%20%20%23%20Cell%207%0A%20%20%20%20mo.vstack(%5B%0A%20%20%20%20%20%20%20%20mo.md(%22---%22)%2C%20%23%20Horizontal%20rule%0A%20%20%20%20%20%20%20%20mo.md(%22%23%23%20Calculation%20Results%22)%0A%20%20%20%20%5D)%0A%20%20%20%20return%0A%0A%0A%40app.cell%0Adef%20_(%0A%20%20%20%20balance_tier_points%2C%0A%20%20%20%20calculate_daily_volume_plan%2C%0A%20%20%20%20math%2C%0A%20%20%20%20mo%2C%0A%20%20%20%20num_days%2C%0A%20%20%20%20target_points%2C%0A%20%20%20%20volume_bonus_active%2C%0A)%3A%0A%20%20%20%20%23%20Cell%208%0A%0A%20%20%20%20%23%20Get%20current%20values%20from%20UI%20elements%0A%20%20%20%20current_target_points%20%3D%20target_points.value%0A%20%20%20%20current_num_days%20%3D%20num_days.value%0A%20%20%20%20current_balance_tier_points_val%20%3D%20balance_tier_points.value%0A%20%20%20%20current_bonus_active%20%3D%20volume_bonus_active.value%20%23%20GET%20BONUS%20FLAG%0A%0A%20%20%20%20%23%20---%20Input%20Validation%20---%0A%20%20%20%20validation_errors%20%3D%20%5B%5D%0A%20%20%20%20if%20not%20(isinstance(current_target_points%2C%20(int%2C%20float))%20and%20current_target_points%20%3E%3D%200)%3A%0A%20%20%20%20%20%20%20%20validation_errors.append(%22Target%20Total%20Points%20must%20be%20a%20valid%20non-negative%20number.%22)%0A%20%20%20%20if%20not%20(isinstance(current_num_days%2C%20int)%20and%201%20%3C%3D%20current_num_days%20%3C%3D%2015)%3A%0A%20%20%20%20%20%20%20%20validation_errors.append(%22Number%20of%20Trading%20Days%20must%20be%20between%201%20and%2015.%22)%0A%20%20%20%20if%20not%20(isinstance(current_balance_tier_points_val%2C%20int)%20and%200%20%3C%3D%20current_balance_tier_points_val%20%3C%3D%204)%3A%0A%20%20%20%20%20%20%20%20validation_errors.append(%22Invalid%20balance%20tier%20selected%20(internal%20value%20error).%22)%0A%0A%20%20%20%20elements_to_display%20%3D%20%5B%5D%0A%0A%20%20%20%20if%20validation_errors%3A%0A%20%20%20%20%20%20%20%20error_html_content%20%3D%20%22%3Cstrong%3EInput%20Error(s)%3A%3C%2Fstrong%3E%3Cul%3E%22%0A%20%20%20%20%20%20%20%20for%20error%20in%20validation_errors%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20error_html_content%20%2B%3D%20f%22%3Cli%3E%7Berror%7D%3C%2Fli%3E%22%0A%20%20%20%20%20%20%20%20error_html_content%20%2B%3D%20%22%3C%2Ful%3E%22%0A%20%20%20%20%20%20%20%20error_html_content%20%2B%3D%20%22%3Cp%3EPlease%20correct%20the%20inputs%20above%20or%20ensure%20they%20are%20valid.%3C%2Fp%3E%22%0A%20%20%20%20%20%20%20%20elements_to_display.append(%0A%20%20%20%20%20%20%20%20%20%20%20%20mo.Html(f%22%22%22%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cdiv%20style%3D'color%3A%20%23dc3545%3B%20background-color%3A%20%23f8d7da%3B%20border%3A%201px%20solid%20%23f5c6cb%3B%20padding%3A%2010px%3B%20border-radius%3A%204px%3B%20margin-bottom%3A%2015px%3B'%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%7Berror_html_content%7D%0A%20%20%20%20%20%20%20%20%20%20%20%20%3C%2Fdiv%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%22%22%22)%0A%20%20%20%20%20%20%20%20)%0A%20%20%20%20else%3A%0A%20%20%20%20%20%20%20%20plan_data%2C%20total_actual_volume_spent%2C%20total_balance_pts%2C%20total_achievable%2C%20calc_error_msg%20%3D%20calculate_daily_volume_plan(%0A%20%20%20%20%20%20%20%20%20%20%20%20current_target_points%2C%20current_num_days%2C%20current_balance_tier_points_val%2C%20current_bonus_active%20%23%20PASS%20BONUS%20FLAG%0A%20%20%20%20%20%20%20%20)%0A%0A%20%20%20%20%20%20%20%20remaining_volume_points_needed%20%3D%20current_target_points%20-%20total_balance_pts%20%23%20Based%20on%20initial%20target%0A%0A%20%20%20%20%20%20%20%20if%20calc_error_msg%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20elements_to_display.append(%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20mo.Html(f%22%22%22%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cdiv%20style%3D'color%3A%20%23dc3545%3B%20background-color%3A%20%23f8d7da%3B%20border%3A%201px%20solid%20%23f5c6cb%3B%20padding%3A%2010px%3B%20border-radius%3A%204px%3B'%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cstrong%3ECalculation%20Function%20Error%3A%3C%2Fstrong%3E%20%7Bcalc_error_msg%7D%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3C%2Fdiv%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22%22%22)%0A%20%20%20%20%20%20%20%20%20%20%20%20)%0A%20%20%20%20%20%20%20%20else%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20output_md_strings%20%3D%20%5B%5D%0A%20%20%20%20%20%20%20%20%20%20%20%20messages_content_list%20%3D%20%5B%5D%0A%20%20%20%20%20%20%20%20%20%20%20%20error_messages_content_list%20%3D%20%5B%5D%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20%23%20---%20Error%20Messages%20Section%20---%0A%20%20%20%20%20%20%20%20%20%20%20%20if%20remaining_volume_points_needed%20%3E%200%20and%20total_achievable%20%3C%20current_target_points%20%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20error_messages_content_list.append(f%22Potential%20Issue%3A%20Achievable%20total%20points%20(%7Btotal_achievable%7D)%20are%20less%20than%20the%20target%20(%7Bcurrent_target_points%7D).%20This%20might%20be%20due%20to%20the%20%242%20minimum%20spend%20rule%20or%20bonus%20period%20effects%20where%20exact%20daily%20target%20points%20can't%20be%20hit%20minimally.%22)%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20if%20error_messages_content_list%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20html_content%20%3D%20%22%22.join(%5Bf%22%3Cp%3E%3Cstrong%3E%7Bmsg%7D%3C%2Fstrong%3E%3C%2Fp%3E%22%20for%20msg%20in%20error_messages_content_list%5D)%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20elements_to_display.append(%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20mo.Html(f%22%22%22%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cdiv%20style%3D'color%3A%20%23dc3545%3B%20background-color%3A%20%23f8d7da%3B%20border%3A%201px%20solid%20%23f5c6cb%3B%20padding%3A%2010px%3B%20border-radius%3A%204px%3B%20margin-top%3A%2015px%3B%20margin-bottom%3A%2015px%3B'%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%7Bhtml_content%7D%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3C%2Fdiv%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22%22%22)%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20)%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20%23%20---%20Informational%20Messages%20Section%20---%0A%20%20%20%20%20%20%20%20%20%20%20%20if%20current_bonus_active%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20messages_content_list.append(%22Note%3A%20Volume%20Bonus%20Period%20is%20ACTIVE.%20Purchase%20volume%20effectively%20counts%20as%20double%20for%20points%20calculation.%22)%0A%20%20%20%20%20%20%20%20%20%20%20%20if%20remaining_volume_points_needed%20%3C%3D%200%20and%20total_achievable%20%3E%20current_target_points%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20messages_content_list.append(f%22Note%3A%20Your%20expected%20balance%20points%20alone%20(%7Btotal_balance_pts%7D)%20already%20meet%20or%20exceed%20your%20target%20(%7Bcurrent_target_points%7D).%20The%20estimated%20total%20achievable%20points%20are%20%7Btotal_achievable%7D.%22)%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20if%20plan_data%20and%20(total_actual_volume_spent%20%3E%2050000%20or%20any(item%5B%22min_volume%22%5D%20%3E%2020000%20for%20item%20in%20plan_data))%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20messages_content_list.append(%22Warning%3A%20The%20required%20actual%20purchase%20volume%20(daily%20or%20total)%20is%20substantial.%20Ensure%20sufficient%20capital%2C%20consider%20trading%20fees%2C%20and%20manage%20risk.%22)%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20if%20messages_content_list%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20html_content%20%3D%20%22%22.join(%5Bf%22%3Cp%3E%7Bmsg%7D%3C%2Fp%3E%22%20for%20msg%20in%20messages_content_list%5D)%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20elements_to_display.append(%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20mo.Html(f%22%22%22%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cdiv%20style%3D'color%3A%20%23856404%3B%20background-color%3A%20%23fff3cd%3B%20border%3A%201px%20solid%20%23ffeeba%3B%20padding%3A%2010px%3B%20border-radius%3A%204px%3B%20margin-top%3A%2015px%3B%20margin-bottom%3A%2015px%3B'%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%7Bhtml_content%7D%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3C%2Fdiv%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22%22%22)%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20)%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20%23%20---%20Main%20Plan%20Output%20Section%20---%0A%20%20%20%20%20%20%20%20%20%20%20%20output_md_strings.append(%22%23%23%23%20Plan%20Summary%22)%0A%20%20%20%20%20%20%20%20%20%20%20%20output_md_strings.append(f%22*%20%20%20Target%20Total%20Points%3A%20**%7Bcurrent_target_points%7D**%22)%0A%20%20%20%20%20%20%20%20%20%20%20%20output_md_strings.append(f%22*%20%20%20Planning%20Period%3A%20**%7Bcurrent_num_days%7D%20days**%22)%0A%20%20%20%20%20%20%20%20%20%20%20%20output_md_strings.append(%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20f%22*%20%20%20Expected%20Daily%20Balance%20Points%3A%20**%7Bcurrent_balance_tier_points_val%7D%20points%2Fday**%22%0A%20%20%20%20%20%20%20%20%20%20%20%20)%0A%20%20%20%20%20%20%20%20%20%20%20%20output_md_strings.append(%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20f%22*%20%20%20Total%20Points%20from%20Balance%20(over%20%7Bcurrent_num_days%7D%20days)%3A%20**%7Btotal_balance_pts%7D**%22%0A%20%20%20%20%20%20%20%20%20%20%20%20)%0A%20%20%20%20%20%20%20%20%20%20%20%20output_md_strings.append(f%22*%20%20%20Volume%20Points%20Needed%20(to%20reach%20target)%3A%20**%7Bmax(0%2C%20remaining_volume_points_needed)%7D**%22)%0A%20%20%20%20%20%20%20%20%20%20%20%20if%20current_bonus_active%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20output_md_strings.append(f%22*%20%20%20Volume%20Bonus%3A%20**ACTIVE**%22)%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20output_md_strings.append(%22%22)%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20if%20remaining_volume_points_needed%20%3C%3D%200%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20output_md_strings.append(%22%23%23%23%23%20Volume%20Trading%20Required%3A%20None%22)%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20output_md_strings.append(%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20f%22Your%20expected%20balance%20points%20(%7Btotal_balance_pts%7D)%20already%20meet%20or%20exceed%20your%20target%20(%7Bcurrent_target_points%7D).%22%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20)%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20output_md_strings.append(f%22Minimum%20Daily%20Actual%20Purchase%20Volume%20Guideline%3A%20**%240.00**%22)%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20output_md_strings.append(%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20f%22Resulting%20Total%20Actual%20Purchase%20Volume%20over%20%7Bcurrent_num_days%7D%20days%3A%20**%240.00**%22%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20)%0A%20%20%20%20%20%20%20%20%20%20%20%20else%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20Calculate%20points%20achieved%20by%20the%20plan%20(should%20match%20%60total_achievable%20-%20total_balance_pts%60)%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20planned_volume_points_achieved%20%3D%20total_achievable%20-%20total_balance_pts%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20output_md_strings.append(%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20f%22%23%23%23%23%20Daily%20Volume%20Trading%20Plan%20(to%20earn%20approx.%20%7Bremaining_volume_points_needed%7D%20Volume%20Points%2C%20plan%20achieves%20%7Bplanned_volume_points_achieved%7D%20Volume%20Points)%22%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20)%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20plan_groups%20%3D%20%7B%7D%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20if%20plan_data%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20for%20item%20in%20plan_data%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20key%20based%20on%20actual%20spend%20and%20target%20points%20for%20that%20spend%20configuration%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20key%20%3D%20f%22%7Bitem%5B'vol_points_needed'%5D%7D_%7Bitem%5B'min_volume'%5D%3A.2f%7D%22%20%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20if%20key%20not%20in%20plan_groups%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20plan_groups%5Bkey%5D%20%3D%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22vol_points_target_for_day%22%3A%20item%5B'vol_points_needed'%5D%2C%20%23%20Points%20targeted%20by%20distribution%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22actual_volume_to_spend%22%3A%20item%5B'min_volume'%5D%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22effective_volume_for_points%22%3A%20item%5B'effective_volume_for_points'%5D%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22days%22%3A%20%5B%5D%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20plan_groups%5Bkey%5D%5B%22days%22%5D.append(item%5B%22day%22%5D)%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20sorted_groups%20%3D%20sorted(plan_groups.values()%2C%20key%3Dlambda%20g%3A%20(-g%5B%22vol_points_target_for_day%22%5D%2C%20-g%5B%22actual_volume_to_spend%22%5D))%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20if%20not%20sorted_groups%20and%20plan_data%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20output_md_strings.append(%22*%20%20%20*Detailed%20daily%20plan%20items%20(grouping%20failed)%3A*%22)%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20for%20item%20in%20plan_data%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20output_md_strings.append(f%22%20%20%20%20*%20Day%20%7Bitem%5B'day'%5D%7D%3A%20Target%20%7Bitem%5B'vol_points_needed'%5D%7D%20VP%2C%20Min%20Actual%20Vol%20%24%7Bitem%5B'min_volume'%5D%3A.2f%7D%22%20%2B%20(f%22%20(effective%20%24%7Bitem%5B'effective_volume_for_points'%5D%3A.2f%7D)%22%20if%20current_bonus_active%20and%20item%5B'min_volume'%5D%20%3E%3D2%20else%20%22%22))%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20elif%20not%20plan_data%20and%20remaining_volume_points_needed%20%3E%200%20%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20output_md_strings.append(%22*%20%20%20*No%20specific%20volume%20actions%20were%20generated.%20Check%20if%20the%20target%20is%20achievable.*%22)%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20for%20group%20in%20sorted_groups%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20days_list%20%3D%20%22%2C%20%22.join(map(str%2C%20sorted(group%5B%22days%22%5D)))%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20actual_spend_str%20%3D%20f%22%24%7Bgroup%5B'actual_volume_to_spend'%5D%3A.2f%7D%22%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20Calculate%20points%20this%20specific%20group's%20actual%20spend%20will%20yield%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20points_from_this_spend%20%3D%200%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20if%20group%5B'actual_volume_to_spend'%5D%20%3E%3D%202.00%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20effective_v_group%20%3D%20group%5B'actual_volume_to_spend'%5D%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20if%20current_bonus_active%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20effective_v_group%20*%3D%202.0%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20points_from_this_spend%20%3D%20math.floor(math.log2(effective_v_group))%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20bonus_info%20%3D%20%22%22%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20if%20current_bonus_active%20and%20group%5B'actual_volume_to_spend'%5D%20%3E%3D%202.00%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20bonus_info%20%3D%20f%22%20(effective%20volume%20for%20points%3A%20%24%7Bgroup%5B'actual_volume_to_spend'%5D%20*%202.0%3A.2f%7D)%22%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20output_md_strings.append(%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20f%22*%20%20%20On%20Day(s)%20%7Bdays_list%7D%3A%20Spend%20**%7Bactual_spend_str%7D%20USD**%7Bbonus_info%7D.%20This%20yields%20**%7Bpoints_from_this_spend%7D%20Volume%20Point(s)**.%22%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20)%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20output_md_strings.append(%22%22)%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20output_md_strings.append(%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20f%22Minimum%20Total%20Actual%20Purchase%20Volume%20over%20%7Bcurrent_num_days%7D%20days%20(for%20volume%20points)%3A%20**%24%7Btotal_actual_volume_spent%3A.2f%7D%20USD**%22%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20)%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20output_md_strings.append(%22%22)%0A%20%20%20%20%20%20%20%20%20%20%20%20output_md_strings.append(f%22**Total%20Estimated%20Achievable%20Points%20(Balance%20%2B%20Plan%20Volume)%3A%20%7Btotal_achievable%7D**%22)%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20main_content_md_str%20%3D%20%22%5Cn%22.join(output_md_strings)%0A%20%20%20%20%20%20%20%20%20%20%20%20styled_main_content%20%3D%20mo.Html(f%22%22%22%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cdiv%20style%3D'background-color%3A%20%23d4edda%3B%20color%3A%20%23155724%3B%20border%3A%201px%20solid%20%23c3e6cb%3B%20padding%3A%2020px%3B%20border-radius%3A%204px%3B%20margin-top%3A%2010px%3B'%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%7Bmo.md(main_content_md_str)%7D%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3C%2Fdiv%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22%22%22)%0A%20%20%20%20%20%20%20%20%20%20%20%20elements_to_display.append(styled_main_content)%0A%0A%20%20%20%20%23%20---%20Determine%20final%20output%20for%20the%20cell%20---%0A%20%20%20%20final_cell_output%20%3D%20None%0A%20%20%20%20if%20not%20elements_to_display%3A%0A%20%20%20%20%20%20%20%20final_cell_output%20%3D%20mo.md(%22Enter%20your%20goal%2C%20days%2C%20and%20balance%20tier%20to%20calculate%20your%20daily%20trading%20plan%2C%20or%20check%20inputs%20if%20results%20are%20unexpected.%22)%0A%20%20%20%20elif%20len(elements_to_display)%20%3D%3D%201%3A%0A%20%20%20%20%20%20%20%20final_cell_output%20%3D%20elements_to_display%5B0%5D%0A%20%20%20%20else%3A%0A%20%20%20%20%20%20%20%20final_cell_output%20%3D%20mo.vstack(elements_to_display)%0A%0A%20%20%20%20final_cell_output%0A%20%20%20%20return%0A%0A%0A%40app.cell%0Adef%20_(mo)%3A%0A%20%20%20%20mo.vstack(%5B%0A%20%20%20%20%20%20%20%20mo.md(%22---%22)%2C%0A%20%20%20%20%20%20%20%20mo.md(%0A%20%20%20%20%20%20%20%20%20%20%20%20%22%22%22%0A%20%20%20%20%20%20%20%20%20%20%20%20%23%23%20How%20Points%20Are%20Calculated%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cdiv%20style%3D%22font-size%3A%200.95em%3B%20color%3A%20%23333%3B%20margin-top%3A%2010px%3B%20padding%3A%2015px%3B%20background-color%3A%20%23f8f9fa%3B%20border%3A%201px%20solid%20%23dee2e6%3B%20border-radius%3A%204px%3B%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cp%3EYour%20total%20points%20are%20the%20sum%20of%20Balance%20Points%20and%20Volume%20Points%20over%20the%20last%2015%20days.%3C%2Fp%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cul%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cli%3E%3Cstrong%3EBalance%20Points%3A%3C%2Fstrong%3E%20Earned%20daily%20based%20on%20your%20asset%20balance%20tier%20(%240%20to%20%3C%20%24100%20%3D%200%20pts%2Fday%2C%20%24100%20to%20%3C%20%241k%20%3D%201%20pt%2Fday%2C%20etc.).%20Total%20balance%20points%20%3D%20daily%20balance%20points%20*%20number%20of%20days.%3C%2Fli%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cli%3E%3Cstrong%3EVolume%20Points%3A%3C%2Fstrong%3E%20Earned%20daily%20based%20on%20your%20*daily*%20Alpha%20token%20purchase%20volume.%20The%20points%20for%20a%20given%20day%20(V_daily)%20are%20%3Ccode%3Efloor(log%3Csub%3E2%3C%2Fsub%3E(V_daily))%3C%2Fcode%3E%20for%20V_daily%20%E2%89%A5%20%242%2C%20and%200%20for%20V_daily%20%3C%20%242.%20Total%20volume%20points%20%3D%20sum%20of%20daily%20volume%20points%20over%20the%20days.%3C%2Fli%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3C%2Ful%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cp%3EThis%20calculator%20helps%20you%20figure%20out%20the%20required%20*daily%20purchase%20volume*%20needed%20to%20cover%20the%20points%20your%20balance%20*doesn't*%20earn%2C%20aiming%20for%20your%20total%20goal%20across%20the%20specified%20number%20of%20days.%20It%20distributes%20the%20required%20volume%20points%20to%20minimize%20total%20volume.%3C%2Fp%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3C%2Fdiv%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%22%22%22%0A%20%20%20%20%20%20%20%20)%0A%20%20%20%20%5D)%0A%20%20%20%20return%0A%0A%0A%40app.cell%0Adef%20_()%3A%0A%20%20%20%20return%0A%0A%0Aif%20__name__%20%3D%3D%20%22__main__%22%3A%0A%20%20%20%20app.run()%0A</marimo-code></head>
+  <body>
+    <div id="root"></div>
+  </body>
 </html>
